@@ -40,6 +40,7 @@ OPTIONS
 OTHER OPTIONS
 
   -h, --help            shows this help text
+  --version             shows this tools version
 
 EOF
 }
@@ -66,6 +67,11 @@ while true ; do
   case "$1" in
     -h|--help)
       usage
+      exit
+      ;;
+
+    --version)
+      echo "archive $version"
       exit
       ;;
 
