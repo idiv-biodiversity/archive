@@ -3,7 +3,6 @@
 # safety first
 set -efu -o pipefail
 
-app=$(basename "$0" .sh)
 version="1.0.0"
 
 # -----------------------------------------------------------------------------
@@ -11,11 +10,11 @@ version="1.0.0"
 # -----------------------------------------------------------------------------
 
 function usage { cat << EOF
-$app $version
+archive $version
 
 USAGE
 
-  $app [options] [--] input [output]
+  archive [options] [--] input [output]
 
 DESCRIPTION
 
@@ -52,7 +51,7 @@ EOF
 # $1 message
 # $2 exit status, optional, defaults to 1
 function bailout {
-  echo "$app: error: $1" >&2
+  echo "archive: error: $1" >&2
   exit "${2:-1}"
 }
 
@@ -91,7 +90,7 @@ while true ; do
       ;;
 
     -*)
-      echo "$app: unrecognized option: $1" >&2
+      echo "archive: unrecognized option: $1" >&2
       usage >&2
       exit 1
       ;;
@@ -124,7 +123,7 @@ input: $input
 output: $output
 
 versions:
-- $app $version
+- archive $version
 - $(tar --version | head -1)
 - $(md5sum --version | head -1)
 - $(archive-sum --version)
