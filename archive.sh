@@ -1,20 +1,65 @@
 #!/usr/bin/env bash
 
 # safety first
-set -efu -o pipefail
+set \
+  -o errexit \
+  -o pipefail \
+  -o noglob \
+  -o nounset \
+
+app=$(basename "$0" .sh)
 
 version="1.0.0"
+
+# -----------------------------------------------------------------------------
+# utilities
+# -----------------------------------------------------------------------------
+
+function log.info {
+  if [[ -t 0 ]]
+  then
+    if [[ -t 1 ]]
+    then
+      echo -e "\\e[1m$app: $*\\e[0m"
+    else
+      echo "$app: $*"
+    fi
+  else
+    logger -p user.info -t "$app" "$@"
+  fi
+}
+
+function log.error {
+  if [[ -t 0 ]]
+  then
+    if [[ -t 2 ]]
+    then
+      echo -e "\\e[1m\\e[31m$app: $*\\e[0m" >&2
+    else
+      echo "$app: $*" >&2
+    fi
+  else
+    logger -p user.err -t "$app" "$@"
+  fi
+}
+
+# $1 message
+# $2 exit status, optional, defaults to 1
+function bailout {
+  log.error "$1"
+  exit "${2:-1}"
+}
 
 # -----------------------------------------------------------------------------
 # usage
 # -----------------------------------------------------------------------------
 
 function usage { cat << EOF
-archive $version
+$app $version
 
 USAGE
 
-  archive [options] [--] input [output]
+  $app [options] [--] input [output]
 
 DESCRIPTION
 
@@ -39,21 +84,10 @@ OPTIONS
 
 OTHER OPTIONS
 
-  -h, --help            shows this help text
+  -?, --help            shows this help text
   --version             shows this tools version
 
 EOF
-}
-
-# -----------------------------------------------------------------------------
-# helpers
-# -----------------------------------------------------------------------------
-
-# $1 message
-# $2 exit status, optional, defaults to 1
-function bailout {
-  echo "archive: error: $1" >&2
-  exit "${2:-1}"
 }
 
 # -----------------------------------------------------------------------------
@@ -63,15 +97,16 @@ function bailout {
 force=no
 verbose=no
 
-while true ; do
-  case "$1" in
-    -h|--help)
+for arg in "$@"
+do
+  case "$arg" in
+    -\?|--help)
       usage
       exit
       ;;
 
     --version)
-      echo "archive $version"
+      echo "$app $version"
       exit
       ;;
 
@@ -96,9 +131,7 @@ while true ; do
       ;;
 
     -*)
-      echo "archive: unrecognized option: $1" >&2
-      usage >&2
-      exit 1
+      bailout "unrecognized option: $1"
       ;;
 
     *)
@@ -107,15 +140,24 @@ while true ; do
   esac
 done
 
+set +o nounset
 shopt -s extglob
 input="${1%%+(/)}"
+shift || bailout "missing argument: input"
 shopt -u extglob
-shift
+set -o nounset
 
-if [[ "$*" == "" ]] ; then
+if [[ "$*" == "" ]]
+then
   output=$input.tar.gz
 else
   output=$1
+  shift
+fi
+
+if [[ "$*" != "" ]]
+then
+  bailout "trailing arguments: $*"
 fi
 
 # -----------------------------------------------------------------------------
@@ -129,7 +171,7 @@ input: $input
 output: $output
 
 versions:
-- archive $version
+- $app $version
 - $(tar --version | head -1)
 - $(md5sum --version | head -1)
 - $(archive-sum --version)
@@ -149,17 +191,19 @@ EOF
 [[ -e $output && $force == "no" ]] &&
   bailout "output already exist"
 
-if [[ "${output:0:1}" != "/" ]] ; then
+# -----------------------------------------------------------------------------
+# preparation
+# -----------------------------------------------------------------------------
+
+if [[ "${output:0:1}" != "/" ]]
+then
   output="$PWD/$output"
 fi
 
-# -----------------------------------------------------------------------------
-# prepare
-# -----------------------------------------------------------------------------
-
 output_dir=$(dirname "$output")
 
-if [[ ! -e $output_dir ]] ; then
+if [[ ! -e $output_dir ]]
+then
   mkdir -p "$output_dir"
 fi
 
@@ -177,18 +221,27 @@ output_hash_file="$output.md5"
 # -----------------------------------------------------------------------------
 
 [[ $verbose == yes ]] &&
-set -x
+  log.info "creating archive"
 
 tar cz "$input" |
   tee >(md5sum | sed -e "s|-$|$(basename "$output")|" > "$output_hash_file") |
-  dd of="$output" bs="$output_bs" status=none
+  dd of="$output" bs="$output_bs" status=none ||
+  bailout "creating archive failed"
 
 # -----------------------------------------------------------------------------
 # verify archive
 # -----------------------------------------------------------------------------
 
+[[ $verbose == yes ]] &&
+  log.info "verifying archive"
+
 md5sum -c --quiet "$output_hash_file" ||
   bailout "verification error archive itself"
 
+[[ $verbose == yes ]] &&
+  log.info "verifying archive contents"
+
 archive-sum -c --append "$output_hash_file" --quiet "$output" ||
   bailout "verification error archive internals"
+
+log.info "done"
