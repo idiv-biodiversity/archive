@@ -260,4 +260,7 @@ md5sum -c --quiet "$output_hash_file" ||
 archive-sum -c --append "$output_hash_file" --quiet "$output" ||
   bailout "verification error archive internals"
 
-log.info "done"
+if [[ $verbose == yes ]]
+then
+  log.info "done"
+fi
