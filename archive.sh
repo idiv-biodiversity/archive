@@ -16,30 +16,20 @@ version="1.1.0"
 # -----------------------------------------------------------------------------
 
 function log.info {
-  if [[ -t 0 ]]
+  if [[ -t 1 ]]
   then
-    if [[ -t 1 ]]
-    then
-      echo -e "\\e[1m$app: $*\\e[0m"
-    else
-      echo "$app: $*"
-    fi
+    echo -e "\\e[1m$app: $*\\e[0m"
   else
-    logger -p user.info -t "$app" "$@"
+    echo "$app: $*"
   fi
 }
 
 function log.error {
-  if [[ -t 0 ]]
+  if [[ -t 2 ]]
   then
-    if [[ -t 2 ]]
-    then
-      echo -e "\\e[1m\\e[31m$app: $*\\e[0m" >&2
-    else
-      echo "$app: $*" >&2
-    fi
+    echo -e "\\e[1m\\e[31m$app: $*\\e[0m" >&2
   else
-    logger -p user.err -t "$app" "$@"
+    echo "$app: $*" >&2
   fi
 }
 
