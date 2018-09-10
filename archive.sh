@@ -215,8 +215,10 @@ fi
 
 output_bs=$(stat -c %o "$output_dir")
 
-cd "$(dirname "$input")" ||
-  bailout "unable to change to parent of input"
+input_dir="$(dirname "$input")"
+
+cd "$input_dir" ||
+  bailout "unable to change to input directory: $input_dir"
 
 input=$(basename "$input")
 
@@ -241,11 +243,17 @@ tar cz "$input" |
 [[ $verbose == yes ]] &&
   log.info "verifying archive"
 
+cd "$output_dir" ||
+  bailout "unable to change to output directory: $output_dir"
+
 md5sum -c --quiet "$output_hash_file" ||
   bailout "verification error archive itself"
 
 [[ $verbose == yes ]] &&
   log.info "verifying archive contents"
+
+cd "$input_dir" ||
+  bailout "unable to change to input directory: $input_dir"
 
 archive-sum -c --append "$output_hash_file" --quiet "$output" ||
   bailout "verification error archive internals"
