@@ -9,7 +9,7 @@ set \
 
 app=$(basename "$0" .sh)
 
-version="1.1.3"
+version="1.1.4"
 
 # -----------------------------------------------------------------------------
 # utilities
@@ -80,6 +80,7 @@ OPTIONS
   -f, --force           overwrites existing output
   -q, --quiet           disables verbose
   -v, --verbose         output every command as it executes
+  -h, --symlinks        archive the files symbolic links point to
 
 OTHER OPTIONS
 
@@ -128,6 +129,10 @@ do
 
     -v|--verbose)
       verbose=yes
+      shift
+      ;;
+    -h|--symlinks)
+      symlinks=yes
       shift
       ;;
 
@@ -185,6 +190,15 @@ versions:
 EOF
 
 # -----------------------------------------------------------------------------
+# symlinks: add 'follow links' option (-h) to tar options
+# -----------------------------------------------------------------------------
+
+taroptions="cz" # symlinks are archived themselves
+
+[[ $symlinks == yes ]] &&
+  taroptions="czh" # follow symlinks, archive data the links point to
+
+# -----------------------------------------------------------------------------
 # check arguments
 # -----------------------------------------------------------------------------
 
@@ -231,7 +245,7 @@ output_hash_file="$output.md5"
 [[ $verbose == yes ]] &&
   log.info "creating archive"
 
-tar cz "$input" |
+tar $taroptions "$input" |
   tee >(md5sum | sed -e "s|-$|$(basename "$output")|" > "$output_hash_file") |
   dd of="$output" bs="$output_bs" status=none ||
   bailout "creating archive failed"
