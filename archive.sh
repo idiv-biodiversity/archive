@@ -78,6 +78,7 @@ ARGUMENTS
 OPTIONS
 
   -f, --force           overwrites existing output
+  -h, --dereference     follow symlinks
   -q, --quiet           disables verbose
   -v, --verbose         output every command as it executes
 
@@ -101,6 +102,7 @@ tool.available tar
 # -----------------------------------------------------------------------------
 
 force=no
+symlinks=no
 verbose=no
 
 for arg in "$@"
@@ -118,6 +120,11 @@ do
 
     -f|--force)
       force=yes
+      shift
+      ;;
+
+    -h|--symlinks)
+      symlinks=yes
       shift
       ;;
 
@@ -184,6 +191,13 @@ versions:
 
 EOF
 
+tar_options="cz"
+
+if [[ $symlinks == yes ]]
+then
+  tar_options="${tar_options}h"
+fi
+
 # -----------------------------------------------------------------------------
 # check arguments
 # -----------------------------------------------------------------------------
@@ -231,7 +245,7 @@ output_hash_file="$output.md5"
 [[ $verbose == yes ]] &&
   log.info "creating archive"
 
-tar cz "$input" |
+tar "$tar_options" "$input" |
   tee >(md5sum | sed -e "s|-$|$(basename "$output")|" > "$output_hash_file") |
   dd of="$output" bs="$output_bs" status=none ||
   bailout "creating archive failed"
