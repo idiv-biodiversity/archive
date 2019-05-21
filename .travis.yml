@@ -1,38 +1,29 @@
 sudo: false
 
 os: linux
-dist: trusty
+dist: xenial
 
 language: python
 
-python: 3.6
+python: 3.7
 
 addons:
   apt:
     packages:
       - libarchive-dev
       - libssl-dev
+      - ninja-build
+      - tree
 
 install:
-  - mkdir -p ~/bin
-  - >-
-    export NINJA_LATEST=$(
-    curl -s https://api.github.com/repos/ninja-build/ninja/releases/latest |
-    grep -E 'browser_download_url.+ninja-linux.zip' |
-    cut -d '"' -f 4)
-  - wget "$NINJA_LATEST"
-  - unzip -q ninja-linux.zip -d ~/bin
-  - export PATH="~/bin:$PATH"
   - pip install meson
   - wget https://github.com/idiv-biodiversity/archive-sum/archive/v1.1.1.tar.gz
   - tar xzf v1.1.1.tar.gz
   - meson --prefix="$HOME" archive-sum-1.1.1/build archive-sum-1.1.1
   - ninja -C archive-sum-1.1.1/build install
 
-before_script:
-  - mkdir -p /tmp/foobar
-  - echo foo > /tmp/foobar/foo
-  - echo bar > /tmp/foobar/bar
-
 script:
-  - bash archive.sh -f -v /tmp/foobar $HOME/foobar.tar.gz
+  - make check
+  - make VERBOSE=yes test
+
+cache: pip
