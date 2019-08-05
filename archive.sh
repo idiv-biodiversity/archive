@@ -9,7 +9,7 @@ set \
 
 app=$(basename "$0" .sh)
 
-version="1.2.0"
+version="1.2.1"
 
 # -----------------------------------------------------------------------------
 # utilities
@@ -160,6 +160,14 @@ shift || bailout "missing argument: input"
 shopt -u extglob
 set -o nounset
 
+[[ -n $input ]] ||
+  bailout "no input specified"
+
+[[ -d $input ]] ||
+  bailout "input is not an existing directory"
+
+input=$(realpath "$input")
+
 if [[ "$*" == "" ]]
 then
   output=$input.tar.gz
@@ -167,6 +175,11 @@ else
   output=$1
   shift
 fi
+
+[[ -e $output && $force == "no" ]] &&
+  bailout "output already exist"
+
+output=$(realpath -m "$output")
 
 if [[ "$*" != "" ]]
 then
@@ -204,26 +217,8 @@ then
 fi
 
 # -----------------------------------------------------------------------------
-# check arguments
-# -----------------------------------------------------------------------------
-
-[[ -n $input ]] ||
-  bailout "no input specified"
-
-[[ -d $input ]] ||
-  bailout "input is not an existing directory"
-
-[[ -e $output && $force == "no" ]] &&
-  bailout "output already exist"
-
-# -----------------------------------------------------------------------------
 # preparation
 # -----------------------------------------------------------------------------
-
-if [[ "${output:0:1}" != "/" ]]
-then
-  output="$PWD/$output"
-fi
 
 output_dir=$(dirname "$output")
 
@@ -234,7 +229,7 @@ fi
 
 output_bs=$(stat -c %o "$output_dir")
 
-input_dir="$(dirname "$input")"
+input_dir=$(dirname "$input")
 
 cd "$input_dir" ||
   bailout "unable to change to input directory: $input_dir"
