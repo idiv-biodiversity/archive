@@ -1,29 +1,40 @@
 sudo: false
 
 os: linux
-dist: xenial
+dist: trusty
 
-language: python
+language: rust
 
-python: 3.7
+rust:
+  - beta
+  - nightly
+
+matrix:
+  include:
+    - os: linux
+      rust: stable
+      install:
+        - rustup component add clippy
+        - rustup component add rustfmt
+      script:
+        - cargo clippy --all --all-features --color always -- -D warnings
+        - cargo fmt -- --check --color always
+        - cargo test --all --all-features --color always --verbose
+  allow_failures:
+    - rust: nightly
+
+script:
+  - cargo test --all --all-features --color always --verbose
+
+cache: cargo
+
+env:
+  global:
+    - CARGO_BUILD_JOBS="2"
 
 addons:
   apt:
     packages:
+      - bsdtar
       - libarchive-dev
       - libssl-dev
-      - ninja-build
-      - tree
-
-install:
-  - pip install meson
-  - wget https://github.com/idiv-biodiversity/archive-sum/archive/v1.1.1.tar.gz
-  - tar xzf v1.1.1.tar.gz
-  - meson --prefix="$HOME" archive-sum-1.1.1/build archive-sum-1.1.1
-  - ninja -C archive-sum-1.1.1/build install
-
-script:
-  - make check
-  - make VERBOSE=yes test
-
-cache: pip

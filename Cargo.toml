@@ -1,0 +1,33 @@
+[package]
+name = "archive"
+version = "2.0.0"
+authors = ["Christian Krause <christian.krause@mailbox.org>"]
+description = "archive"
+license = "GPL-3.0-or-later"
+readme = "README.md"
+documentation = "https://github.com/idiv-biodiversity/archive"
+homepage = "https://github.com/idiv-biodiversity/archive"
+repository = "https://github.com/idiv-biodiversity/archive"
+keywords = ["archive"]
+categories = ["command-line-utilities", "filesystem"]
+edition = "2018"
+
+[dependencies]
+atty = "^0.2"
+archive-sum = { git = "https://github.com/idiv-biodiversity/archive-sum", branch = "wip/rust" }
+libarchive = { git = "https://github.com/idiv-biodiversity/libarchive-rs" }
+openssl = "^0.10"
+tar = "^0.4"
+
+[dependencies.clap]
+version = "^2"
+features = ["wrap_help"]
+
+[dev-dependencies]
+assert_cmd = "^0.11"
+assert_fs = "^0.11"
+predicates = "^1"
+
+[profile.release]
+lto = true
+panic = 'abort'
