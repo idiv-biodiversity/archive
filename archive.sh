@@ -187,24 +187,22 @@ then
 fi
 
 # -----------------------------------------------------------------------------
-# verbose: output configuration
+# configuration: tar options
 # -----------------------------------------------------------------------------
 
-[[ $verbose == yes ]] &&
-cat << EOF
-wd: $PWD
-input: $input
-output: $output
+case "$output" in
+  *.tar.gz|*.tgz)
+    tar_options="cz"
+    ;;
 
-versions:
-- $app $version
-- $(tar --version | head -1)
-- $(md5sum --version | head -1)
-- $(archive-sum --version)
+  *.tar)
+    tar_options="c"
+    ;;
 
-EOF
-
-tar_options="cz"
+  *)
+    bailout "no matching output file ending"
+    ;;
+esac
 
 if [[ $symlinks == yes ]]
 then
@@ -215,6 +213,25 @@ if [[ $verbose == yes ]]
 then
   tar_options="${tar_options}v"
 fi
+
+# -----------------------------------------------------------------------------
+# verbose: output configuration
+# -----------------------------------------------------------------------------
+
+[[ $verbose == yes ]] &&
+cat << EOF
+wd: $PWD
+input: $input
+output: $output
+tar options: $tar_options
+
+versions:
+- $app $version
+- $(tar --version | head -1)
+- $(md5sum --version | head -1)
+- $(archive-sum --version)
+
+EOF
 
 # -----------------------------------------------------------------------------
 # preparation
