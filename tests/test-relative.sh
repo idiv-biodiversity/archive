@@ -55,7 +55,7 @@ tree "$tmpdir"
 
 archive_cmd=$PWD/../archive.sh
 cd "$tmpdir" || exit 1
-bash "$archive_cmd" src dest/src.tar.gz || exit 1
+bash "$archive_cmd" --output dest/src.tar.gz src || exit 1
 cd "$OLDPWD" || exit 1
 
 # -----------------------------------------------------------------------------

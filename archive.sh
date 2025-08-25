@@ -58,7 +58,7 @@ $app $version
 
 USAGE
 
-  $app [options] [--] input [output]
+  $app [options] [--] input
 
 DESCRIPTION
 
@@ -69,13 +69,13 @@ ARGUMENTS
   input                 the directory to be archived,
                         e.g.: /path/to/dir
 
-  output                the path where the archive should be put
-                        e.g.: /path/to/archive.tar.gz
-                        defaults to \$input.tar.gz
-
   --                    ends option parsing
 
 OPTIONS
+
+  -o|--output <output>  the path where the archive should be put
+                        e.g.: /path/to/archive.tar.gz
+                        defaults to \$input.tar.gz
 
   -f, --force           overwrites existing output
   -h, --dereference     follow symlinks
@@ -128,6 +128,12 @@ do
       shift
       ;;
 
+    -o|--output)
+      shift
+      output=$1
+      shift
+      ;;
+
     -q|--quiet)
       verbose=no
       shift
@@ -168,12 +174,9 @@ set -o nounset
 
 input=$(realpath "$input")
 
-if [[ "$*" == "" ]]
+if [[ ! -v output ]]
 then
   output=$input.tar.gz
-else
-  output=$1
-  shift
 fi
 
 [[ -e $output && $force == "no" ]] &&
