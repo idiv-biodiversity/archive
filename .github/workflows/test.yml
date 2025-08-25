@@ -1,0 +1,34 @@
+---
+
+name: test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - wip/next
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: checkout repo
+        uses: actions/checkout@v5
+
+      - name: install archive-sum
+        run: |
+          sudo apt install -y libarchive-dev libssl-dev ninja-build meson tree
+          wget https://github.com/idiv-biodiversity/archive-sum/archive/v1.1.1.tar.gz
+          tar xzf v1.1.1.tar.gz
+          meson archive-sum-1.1.1/build archive-sum-1.1.1
+          ninja -C archive-sum-1.1.1/build install
+
+      - name: run tests
+        run: |
+          make VERBOSE=yes test
+
+...

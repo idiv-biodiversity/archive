@@ -1,3 +1,5 @@
+SHELL=/bin/bash -o pipefail
+
 SOURCES = $(wildcard test-*.sh)
 
 CHECKS = $(SOURCES:.sh=.check)
