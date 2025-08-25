@@ -244,8 +244,6 @@ then
   mkdir -p "$output_dir"
 fi
 
-output_bs=$(stat -c %o "$output_dir")
-
 input_dir=$(dirname "$input")
 
 cd "$input_dir" ||
@@ -254,6 +252,13 @@ cd "$input_dir" ||
 input=$(basename "$input")
 
 output_hash_file="$output.md5"
+
+# -----------------------------------------------------------------------------
+# determine optimal output I/O size
+# -----------------------------------------------------------------------------
+
+touch "$output"
+output_bs=$(stat -c %o "$output")
 
 # -----------------------------------------------------------------------------
 # create archive
