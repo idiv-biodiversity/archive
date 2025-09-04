@@ -105,9 +105,9 @@ force=no
 symlinks=no
 verbose=no
 
-for arg in "$@"
+while [[ -v 1 ]]
 do
-  case "$arg" in
+  case "$1" in
     -\?|--help)
       usage
       exit
