@@ -159,12 +159,11 @@ do
   esac
 done
 
-set +o nounset
+[[ -v 1 ]] || bailout 'missing argument: input'
 shopt -s extglob
 input="${1%%+(/)}"
-shift || bailout "missing argument: input"
 shopt -u extglob
-set -o nounset
+shift
 
 [[ -n $input ]] ||
   bailout "no input specified"
