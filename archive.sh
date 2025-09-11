@@ -160,10 +160,13 @@ do
 done
 
 [[ -v 1 ]] || bailout 'missing argument: input'
-shopt -s extglob
-input="${1%%+(/)}"
-shopt -u extglob
+input=$1
 shift
+
+# trim trailing slashes
+shopt -s extglob
+input="${input%%+(/)}"
+shopt -u extglob
 
 [[ -n $input ]] ||
   bailout "no input specified"
