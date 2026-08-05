@@ -21,6 +21,7 @@ jobs:
 
       - name: install archive-sum
         run: |
+          sudo apt update
           sudo apt install -y libarchive-dev libssl-dev ninja-build meson tree
           wget https://github.com/idiv-biodiversity/archive-sum/archive/v1.1.1.tar.gz
           tar xzf v1.1.1.tar.gz
